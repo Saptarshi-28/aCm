@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { User, Plus, ListTodo, Settings, LogOut, Calendar, X, RefreshCw, Camera } from 'lucide-react';
+import { User, Plus, ListTodo, Settings, LogOut, Calendar, X, RefreshCw, Camera, Users, Check, X as XIcon, Phone } from 'lucide-react';
 
 interface AdminDashboardProps {
   onLogout: () => void;
   userRole: 'core-member' | 'head-of-dept';
 }
 
-type AdminSection = 'create-task' | 'manage-tasks' | 'profile' | 'settings';
+type AdminSection = 'create-task' | 'manage-tasks' | 'profile' | 'settings' | 'member-requests';
 
 interface Task {
   id: string;
@@ -16,6 +16,16 @@ interface Task {
   deadline: string;
   status: 'available' | 'ongoing' | 'completed' | 'rejected';
   rejectionReason?: string;
+}
+
+interface MemberRequest {
+  id: string;
+  fullName: string;
+  phoneNumber: string;
+  email: string;
+  role: 'member' | 'core-member' | 'head-of-dept';
+  submittedAt: string;
+  status: 'pending' | 'approved' | 'rejected';
 }
 
 export default function AdminDashboard({ onLogout, userRole }: AdminDashboardProps) {
@@ -47,6 +57,45 @@ export default function AdminDashboard({ onLogout, userRole }: AdminDashboardPro
       status: 'rejected',
       rejectionReason: 'Currently overloaded with academic assignments and cannot take on additional tasks this week.'
     },
+  ]);
+
+  const [memberRequests, setMemberRequests] = useState<MemberRequest[]>([
+    {
+      id: '1',
+      fullName: 'Alice Johnson',
+      phoneNumber: '+91 98765 43210',
+      email: 'alice.johnson@bvcoe.edu',
+      role: 'member',
+      submittedAt: '2024-01-15T10:30:00Z',
+      status: 'pending'
+    },
+    {
+      id: '2',
+      fullName: 'Bob Smith',
+      phoneNumber: '+91 87654 32109',
+      email: 'bob.smith@bvcoe.edu',
+      role: 'member',
+      submittedAt: '2024-01-14T14:20:00Z',
+      status: 'pending'
+    },
+    {
+      id: '3',
+      fullName: 'Carol Davis',
+      phoneNumber: '+91 76543 21098',
+      email: 'carol.davis@bvcoe.edu',
+      role: 'member',
+      submittedAt: '2024-01-13T09:15:00Z',
+      status: 'pending'
+    },
+    {
+      id: '4',
+      fullName: 'David Wilson',
+      phoneNumber: '+91 65432 10987',
+      email: 'david.wilson@bvcoe.edu',
+      role: 'member',
+      submittedAt: '2024-01-12T16:45:00Z',
+      status: 'pending'
+    }
   ]);
 
   const [formData, setFormData] = useState({
@@ -118,25 +167,61 @@ export default function AdminDashboard({ onLogout, userRole }: AdminDashboardPro
     console.log('Profile updated:', profileData);
   };
 
-  const branches = ['CSE', 'ECE', 'IT', 'EEE', 'MECH', 'CIVIL'];
+  const handleMemberRequest = (requestId: string, action: 'approve' | 'reject') => {
+    setMemberRequests(requests =>
+      requests.map(request =>
+        request.id === requestId
+          ? { ...request, status: action === 'approve' ? 'approved' : 'rejected' }
+          : request
+      )
+    );
+  };
+
+  const branches = ['CSE', 'IT', 'ECE','EEE', 'MECH', 'CIVIL'];
   const years = ['1', '2', '3', '4'];
-  const sections = ['CSE1', 'CSE2', 'CSE3', 'ECE1', 'ECE2', 'ECE3', 'IT1', 'IT2'];
+  const sections = ['CSE1', 'CSE2', 'CSE3', 'IT1', 'IT2', 'ECE1', 'ECE2'];
   const departments = [
     'Technical',
     'Social Media',
     'Content & Documentation',
     'Design',
     'Marketing',
-    'Events',
-    'Operations'
+    'Event Management'
   ];
 
   const sidebarItems = [
     { id: 'create-task' as AdminSection, label: 'Create Task', icon: Plus },
     { id: 'manage-tasks' as AdminSection, label: 'Manage Tasks', icon: ListTodo },
+    { id: 'member-requests' as AdminSection, label: 'Member Requests', icon: Users },
     { id: 'profile' as AdminSection, label: 'My Profile', icon: User },
     { id: 'settings' as AdminSection, label: 'Settings', icon: Settings },
   ];
+
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case 'head-of-dept':
+        return 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-400 border border-purple-500/30';
+      case 'core-member':
+        return 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-400 border border-blue-500/30';
+      case 'member':
+        return 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 border border-green-500/30';
+      default:
+        return 'bg-gradient-to-r from-gray-500/20 to-slate-500/20 text-gray-400 border border-gray-500/30';
+    }
+  };
+
+  const getRoleDisplayName = (role: string) => {
+    switch (role) {
+      case 'head-of-dept':
+        return 'Head of Department';
+      case 'core-member':
+        return 'Core Member';
+      case 'member':
+        return 'Member';
+      default:
+        return role;
+    }
+  };
 
   const renderContent = () => {
     switch (activeSection) {
@@ -413,6 +498,106 @@ export default function AdminDashboard({ onLogout, userRole }: AdminDashboardPro
                     </div>
                   </form>
                 </div>
+              </div>
+            )}
+          </div>
+        );
+
+      case 'member-requests':
+        return (
+          <div className="bg-gradient-to-br from-[#0f1941] to-[#1a2b5f] border border-blue-500/30 rounded-2xl p-8 shadow-2xl shadow-blue-500/10 backdrop-blur-sm">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-3xl font-bold text-white bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                Member Requests
+              </h2>
+              <div className="text-sm text-gray-400">
+                {memberRequests.filter(r => r.status === 'pending').length} pending requests
+              </div>
+            </div>
+
+            <div className="grid gap-6">
+              {memberRequests.map((request) => (
+                <div 
+                  key={request.id} 
+                  className="border border-blue-900/30 rounded-xl p-6 bg-[#0a1128]/50 backdrop-blur-sm hover:border-cyan-500/30 hover:shadow-2xl hover:shadow-cyan-500/10 transition-all duration-300 transform hover:scale-[1.01] group"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="text-xl font-semibold text-white group-hover:text-cyan-200 transition-colors">
+                        {request.fullName}
+                      </h3>
+                      <p className="text-gray-400 group-hover:text-gray-300 transition-colors">
+                        {request.email}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
+                          request.status === 'approved'
+                            ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 border border-green-500/30'
+                            : request.status === 'rejected'
+                            ? 'bg-gradient-to-r from-red-500/20 to-pink-500/20 text-red-400 border border-red-500/30'
+                            : 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 border border-amber-500/30'
+                        }`}
+                      >
+                        {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                      </span>
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getRoleBadgeColor(request.role)}`}>
+                        {getRoleDisplayName(request.role)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4 mb-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center text-sm text-gray-400 group-hover:text-cyan-300 transition-colors">
+                        <Phone size={16} className="mr-3 text-cyan-400" />
+                        <span>{request.phoneNumber}</span>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-400 group-hover:text-cyan-300 transition-colors">
+                        <User size={16} className="mr-3 text-blue-400" />
+                        <span>Applied as: {getRoleDisplayName(request.role)}</span>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex items-center text-sm text-gray-400 group-hover:text-cyan-300 transition-colors">
+                        <Calendar size={16} className="mr-3 text-purple-400" />
+                        <span>Applied: {new Date(request.submittedAt).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-400 group-hover:text-cyan-300 transition-colors">
+                        <span className="w-6 mr-3 text-center">⏰</span>
+                        <span>{new Date(request.submittedAt).toLocaleTimeString()}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {request.status === 'pending' && (
+                    <div className="flex gap-3 mt-6 pt-4 border-t border-amber-500/20">
+                      <button
+                        onClick={() => handleMemberRequest(request.id, 'approve')}
+                        className="flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg font-medium hover:from-green-600 hover:to-emerald-600 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-green-500/25"
+                      >
+                        <Check size={16} className="mr-2" />
+                        Approve Request
+                      </button>
+                      <button
+                        onClick={() => handleMemberRequest(request.id, 'reject')}
+                        className="flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg font-medium hover:from-red-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-red-500/25"
+                      >
+                        <XIcon size={16} className="mr-2" />
+                        Reject Request
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {memberRequests.length === 0 && (
+              <div className="text-center py-12">
+                <Users size={64} className="mx-auto text-gray-500 mb-4" />
+                <h3 className="text-xl font-semibold text-gray-400 mb-2">No Member Requests</h3>
+                <p className="text-gray-500">All member requests have been processed.</p>
               </div>
             )}
           </div>
