@@ -1,61 +1,94 @@
-import { useState } from 'react';
-import { User, CheckSquare, ListTodo, Clock, Settings, LogOut, Camera } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { User, CheckSquare, ListTodo, Clock, Settings, LogOut, XCircle, ArrowLeft, Moon, Sun, Camera } from 'lucide-react';
+import AdminDashboard from './AdminDashboard';
+const acmLogo = "https://bvcoe.acm.org/static/media/ACM-BVP-logo.6425d80f.png";
 
 interface DashboardProps {
   onLogout: () => void;
   userRole: 'member' | 'core-member' | 'head-of-dept';
+  userEmail: string;
 }
 
 type DashboardSection = 'profile' | 'total-tasks' | 'available-tasks' | 'current-tasks' | 'settings';
 
-export default function Dashboard({ onLogout, userRole }: DashboardProps) {
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  deadline: string;
+  status: 'ongoing' | 'completed' | 'rejected' | 'available';
+  rejectionReason?: string;
+}
+
+interface UserProfile {
+  firstName: string;
+  lastName: string;
+  email: string;
+  branch: string;
+  section: string;
+  department: string;
+  profilePic: string | null;
+}
+
+export default function Dashboard({ onLogout, userRole, userEmail }: DashboardProps) {
   const [activeSection, setActiveSection] = useState<DashboardSection>('profile');
   const [taskFilter, setTaskFilter] = useState<'all' | 'completed' | 'ongoing' | 'rejected'>('all');
-  const [showRejectModal, setShowRejectModal] = useState(false);
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
-
-  const [profileData, setProfileData] = useState({
-    fullName: 'John Doe',
-    email: 'john.doe@bvcoe.edu',
-    branch: 'CSE',
-    year: '2',
-    section: 'CSE2',
-    department: 'Technical',
-    profilePicture: '',
+  const [taskToReject, setTaskToReject] = useState<Task | null>(null);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmationMessage, setConfirmationMessage] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile>({
+    firstName: 'Meera',
+    lastName: 'Nagpal',
+    email: userEmail,
+    branch: '',
+    section: '',
+    department: '',
+    profilePic: null
   });
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
 
-  const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setProfileData({
-          ...profileData,
-          profilePicture: e.target?.result as string
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleProfileUpdate = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Profile updated:', profileData);
-  };
-
-  const branches = ['CSE', 'ECE', 'IT', 'EEE', 'MECH', 'CIVIL'];
-  const years = ['1', '2', '3', '4'];
-  const sections = ['CSE1', 'CSE2', 'CSE3', 'ECE1', 'ECE2', 'ECE3', 'IT1', 'IT2'];
-  const departments = [
-    'Technical',
-    'Social Media',
-    'Content & Documentation',
-    'Design',
-    'Marketing',
-    'Events',
-    'Operations'
-  ];
+  const [tasks, setTasks] = useState<Task[]>([
+    {
+      id: '1',
+      title: 'Website Redesign',
+      description: 'Update the ACM BVCOE website with new design',
+      deadline: '2025-03-20',
+      status: 'ongoing',
+    },
+    {
+      id: '2',
+      title: 'Event Planning',
+      description: 'Organize the upcoming hackathon event',
+      deadline: '2025-03-25',
+      status: 'completed',
+    },
+    {
+      id: '3',
+      title: 'Social Media Campaign',
+      description: 'Create content for social media platforms',
+      deadline: '2025-03-18',
+      status: 'rejected',
+      rejectionReason: 'Not enough time to complete',
+    },
+    {
+      id: '4',
+      title: 'Workshop Content Creation',
+      description: 'Create presentation slides for React workshop',
+      deadline: '2025-04-01',
+      status: 'available',
+    },
+    {
+      id: '5',
+      title: 'Member Onboarding',
+      description: 'Prepare onboarding materials for new members',
+      deadline: '2025-04-05',
+      status: 'available',
+    },
+  ]);
 
   const sidebarItems = [
     { id: 'profile' as DashboardSection, label: 'My Profile', icon: User },
@@ -65,207 +98,245 @@ export default function Dashboard({ onLogout, userRole }: DashboardProps) {
     { id: 'settings' as DashboardSection, label: 'Settings', icon: Settings },
   ];
 
-  const mockTasks = [
-    {
-      id: '1',
-      title: 'Website Redesign',
-      description: 'Update the ACM BVCOE website with new design',
-      deadline: '2025-03-20',
-      status: 'ongoing' as const,
-    },
-    {
-      id: '2',
-      title: 'Event Planning',
-      description: 'Organize the upcoming hackathon event',
-      deadline: '2025-03-25',
-      status: 'completed' as const,
-    },
-    {
-      id: '3',
-      title: 'Social Media Campaign',
-      description: 'Create content for social media platforms',
-      deadline: '2025-03-18',
-      status: 'rejected' as const,
-      rejectionReason: 'Not enough time to complete',
-    },
+  const departments = [
+    'Technical',
+    'Design',
+    'Content and Documentation',
+    'Social Media',
+    'Event and Management',
+    'Outreach'
   ];
 
-  const mockAvailableTasks = [
-    {
-      id: '4',
-      title: 'Workshop Content Creation',
-      description: 'Create presentation slides for React workshop',
-      deadline: '2025-04-01',
-    },
-    {
-      id: '5',
-      title: 'Member Onboarding',
-      description: 'Prepare onboarding materials for new members',
-      deadline: '2025-04-05',
-    },
-  ];
+  const getInitials = () => {
+    return `${userProfile.firstName.charAt(0)}${userProfile.lastName.charAt(0)}`;
+  };
 
-  const handleRejectTask = (taskId: string) => {
-    setSelectedTaskId(taskId);
+  const showConfirmationMessage = (message: string) => {
+    setConfirmationMessage(message);
+    setShowConfirmation(true);
+    setTimeout(() => setShowConfirmation(false), 3000);
+  };
+
+  const handleAcceptTask = (taskId: string) => {
+    setTasks(tasks.map(task =>
+      task.id === taskId ? { ...task, status: 'ongoing' as const } : task
+    ));
+    const task = tasks.find(t => t.id === taskId);
+    showConfirmationMessage(`Task "${task?.title}" has been accepted!`);
+  };
+
+  const handleRejectTask = (task: Task) => {
+    setTaskToReject(task);
     setShowRejectModal(true);
+    setRejectionReason('');
   };
 
   const confirmRejectTask = () => {
-    if (rejectionReason.trim()) {
-      alert(`Task ${selectedTaskId} rejected with reason: ${rejectionReason}`);
+    if (rejectionReason.trim() && taskToReject) {
+      setTasks(tasks.map(task =>
+        task.id === taskToReject.id
+          ? { ...task, status: 'rejected' as const, rejectionReason }
+          : task
+      ));
+      showConfirmationMessage(`Task "${taskToReject.title}" has been rejected.`);
       setShowRejectModal(false);
+      setTaskToReject(null);
       setRejectionReason('');
-      setSelectedTaskId(null);
     }
   };
 
-  const cancelRejectTask = () => {
-    setShowRejectModal(false);
-    setRejectionReason('');
-    setSelectedTaskId(null);
+  const handleCompleteTask = (taskId: string) => {
+    setTasks(tasks.map(task =>
+      task.id === taskId ? { ...task, status: 'completed' as const } : task
+    ));
+    const task = tasks.find(t => t.id === taskId);
+    showConfirmationMessage(`Task "${task?.title}" has been completed!`);
   };
+
+  const handleSaveProfile = () => {
+    setIsEditingProfile(false);
+    showConfirmationMessage('Profile updated successfully!');
+  };
+
+  const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUserProfile({ ...userProfile, profilePic: reader.result as string });
+        showConfirmationMessage('Profile picture updated!');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleLogoClick = () => {
+    setActiveSection('profile');
+  };
+
+  const bgClass = isDarkMode ? 'bg-[#0a1128]' : 'bg-gray-50';
+  const cardBgClass = isDarkMode ? 'bg-[#0f1941]' : 'bg-white';
+  const borderClass = isDarkMode ? 'border-blue-900/20' : 'border-gray-200';
+  const textClass = isDarkMode ? 'text-white' : 'text-gray-900';
+  const mutedTextClass = isDarkMode ? 'text-white' : 'text-gray-600';
+  const inputBgClass = isDarkMode ? 'bg-[#0a1128]' : 'bg-gray-50';
 
   const renderContent = () => {
     switch (activeSection) {
       case 'profile':
         return (
-          <div className="bg-gradient-to-br from-[#0f1941] to-[#1a2b5f] border border-blue-500/30 rounded-2xl p-8 shadow-2xl shadow-blue-500/10 backdrop-blur-sm">
-            <h2 className="text-3xl font-bold text-white mb-6 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-              My Profile
-            </h2>
-            
-            {/* Profile Picture Section */}
+          <div className={`${cardBgClass} border ${borderClass} rounded-xl p-8 animate-fade-in`}>
+            <h2 className={`text-3xl font-bold ${textClass} mb-6`}>My Profile</h2>
             <div className="flex items-center mb-8">
-              <div className="relative group">
-                <div className="w-24 h-24 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-white text-3xl font-bold mr-6 shadow-lg shadow-cyan-500/25 overflow-hidden">
-                  {profileData.profilePicture ? (
-                    <img 
-                      src={profileData.profilePicture} 
-                      alt="Profile" 
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    'JD'
-                  )}
-                </div>
-                <label className="absolute bottom-0 right-4 bg-cyan-500 hover:bg-cyan-600 text-white p-1 rounded-full cursor-pointer transition-all duration-300 transform hover:scale-110 shadow-lg">
-                  <Camera size={14} />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleProfilePictureChange}
-                    className="hidden"
+              <div className="relative">
+                {userProfile.profilePic ? (
+                  <img
+                    src={userProfile.profilePic}
+                    alt="Profile"
+                    className="w-24 h-24 rounded-full object-cover shadow-lg hover:scale-105 transition-transform duration-300"
                   />
-                </label>
+                ) : (
+                  <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg hover:scale-105 transition-transform duration-300">
+                    {getInitials()}
+                  </div>
+                )}
+                {isEditingProfile && (
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition-all shadow-lg"
+                  >
+                    <Camera size={16} />
+                  </button>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProfilePicChange}
+                  className="hidden"
+                />
               </div>
-              <div>
-                <h3 className="text-2xl font-semibold text-white">{profileData.fullName}</h3>
-                <p className="text-gray-400">{profileData.email}</p>
-                <span className="inline-block mt-2 px-3 py-1 bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 rounded-full text-sm font-medium border border-green-500/30">
-                  {userRole === 'head-of-dept' ? 'Head of Department' : userRole === 'core-member' ? 'Core Member' : 'Member'} - {profileData.department}
+              <div className="ml-6">
+                <h3 className={`text-2xl font-semibold ${textClass}`}>
+                  {userProfile.firstName} {userProfile.lastName}
+                </h3>
+                <p className={mutedTextClass}>{userProfile.email}</p>
+                <span className="inline-block mt-2 px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">
+                  {userRole === 'member' ? 'Member' : userRole === 'core-member' ? 'Core Member' : 'Head of Department'}
                 </span>
               </div>
             </div>
-
-            <form onSubmit={handleProfileUpdate} className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
-                  <input
-                    type="text"
-                    value={profileData.fullName}
-                    onChange={(e) => setProfileData({ ...profileData, fullName: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#0a1128] border border-blue-900/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-300 hover:border-blue-400/50"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
-                  <input
-                    type="email"
-                    value={profileData.email}
-                    onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#0a1128] border border-blue-900/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-300 hover:border-blue-400/50"
-                  />
-                </div>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="transform hover:scale-[1.02] transition-transform duration-200">
+                <label className={`block text-lg font-medium ${mutedTextClass} mb-2`}>First Name</label>
+                <input
+                  type="text"
+                  value={userProfile.firstName}
+                  onChange={(e) => setUserProfile({...userProfile, firstName: e.target.value})}
+                  disabled={!isEditingProfile}
+                  className={`w-full px-4 py-3 ${inputBgClass} border ${borderClass} rounded-lg ${textClass} hover:border-blue-500/50 transition-colors duration-200 disabled:opacity-70`}
+                />
               </div>
-
-              <div className="grid md:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Branch</label>
-                  <select
-                    value={profileData.branch}
-                    onChange={(e) => setProfileData({ ...profileData, branch: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#0a1128] border border-blue-900/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-300 hover:border-blue-400/50"
-                  >
-                    {branches.map(branch => (
-                      <option key={branch} value={branch} className="bg-[#0a1128]">{branch}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Year</label>
-                  <select
-                    value={profileData.year}
-                    onChange={(e) => setProfileData({ ...profileData, year: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#0a1128] border border-blue-900/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-300 hover:border-blue-400/50"
-                  >
-                    {years.map(year => (
-                      <option key={year} value={year} className="bg-[#0a1128]">{year}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Section</label>
-                  <select
-                    value={profileData.section}
-                    onChange={(e) => setProfileData({ ...profileData, section: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#0a1128] border border-blue-900/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-300 hover:border-blue-400/50"
-                  >
-                    {sections.map(section => (
-                      <option key={section} value={section} className="bg-[#0a1128]">{section}</option>
-                    ))}
-                  </select>
-                </div>
+              <div className="transform hover:scale-[1.02] transition-transform duration-200">
+                <label className={`block text-lg font-medium ${mutedTextClass} mb-2`}>Last Name</label>
+                <input
+                  type="text"
+                  value={userProfile.lastName}
+                  onChange={(e) => setUserProfile({...userProfile, lastName: e.target.value})}
+                  disabled={!isEditingProfile}
+                  className={`w-full px-4 py-3 ${inputBgClass} border ${borderClass} rounded-lg ${textClass} hover:border-blue-500/50 transition-colors duration-200 disabled:opacity-70`}
+                />
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">ACM Department</label>
+              <div className="transform hover:scale-[1.02] transition-transform duration-200 md:col-span-2">
+                <label className={`block text-lg font-medium ${mutedTextClass} mb-2`}>Email</label>
+                <input
+                  type="email"
+                  value={userProfile.email}
+                  disabled
+                  className={`w-full px-4 py-3 ${inputBgClass} border ${borderClass} rounded-lg ${textClass} opacity-70 cursor-not-allowed`}
+                />
+              </div>
+              <div className="transform hover:scale-[1.02] transition-transform duration-200">
+                <label className={`block text-lg font-medium ${mutedTextClass} mb-2`}>Branch</label>
+                <input
+                  type="text"
+                  value={userProfile.branch}
+                  onChange={(e) => setUserProfile({...userProfile, branch: e.target.value})}
+                  disabled={!isEditingProfile}
+                  placeholder=""
+                  className={`w-full px-4 py-3 ${inputBgClass} border ${borderClass} rounded-lg ${textClass} hover:border-blue-500/50 transition-colors duration-200 disabled:opacity-70`}
+                />
+              </div>
+              <div className="transform hover:scale-[1.02] transition-transform duration-200">
+                <label className={`block text-lg font-medium ${mutedTextClass} mb-2`}>Section</label>
+                <input
+                  type="text"
+                  value={userProfile.section}
+                  onChange={(e) => setUserProfile({...userProfile, section: e.target.value})}
+                  disabled={!isEditingProfile}
+                  placeholder=""
+                  className={`w-full px-4 py-3 ${inputBgClass} border ${borderClass} rounded-lg ${textClass} hover:border-blue-500/50 transition-colors duration-200 disabled:opacity-70`}
+                />
+              </div>
+              <div className="transform hover:scale-[1.02] transition-transform duration-200 md:col-span-2">
+                <label className={`block text-lg font-medium ${mutedTextClass} mb-2`}>Department / Chapter</label>
                 <select
-                  value={profileData.department}
-                  onChange={(e) => setProfileData({ ...profileData, department: e.target.value })}
-                  className="w-full px-4 py-3 bg-[#0a1128] border border-blue-900/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-300 hover:border-blue-400/50"
+                  value={userProfile.department}
+                  onChange={(e) => setUserProfile({...userProfile, department: e.target.value})}
+                  disabled={!isEditingProfile}
+                  className={`w-full px-4 py-3 ${inputBgClass} border ${borderClass} rounded-lg ${textClass} hover:border-blue-500/50 transition-colors duration-200 disabled:opacity-70`}
                 >
+                  <option value="">Select Department</option>
                   {departments.map(dept => (
-                    <option key={dept} value={dept} className="bg-[#0a1128]">{dept}</option>
+                    <option key={dept} value={dept}>{dept}</option>
                   ))}
                 </select>
               </div>
-
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-[1.02] shadow-lg shadow-blue-500/25"
-              >
-                Update Profile
-              </button>
-            </form>
+            </div>
+            <div className="mt-6 flex gap-4">
+              {!isEditingProfile ? (
+                <button
+                  onClick={() => setIsEditingProfile(true)}
+                  className="px-6 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-all duration-300 transform hover:scale-105"
+                >
+                  Edit Profile
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={handleSaveProfile}
+                    className="px-6 py-3 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-all duration-300 transform hover:scale-105"
+                  >
+                    Save Changes
+                  </button>
+                  <button
+                    onClick={() => setIsEditingProfile(false)}
+                    className={`px-6 py-3 ${inputBgClass} ${textClass} rounded-lg font-medium hover:bg-gray-200 transition-all duration-300 transform hover:scale-105 border ${borderClass}`}
+                  >
+                    Cancel
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         );
 
       case 'total-tasks':
+        const filteredTasks = tasks.filter(task =>
+          task.status !== 'available' && (taskFilter === 'all' || task.status === taskFilter)
+        );
         return (
-          <div className="bg-gradient-to-br from-[#0f1941] to-[#1a2b5f] border border-blue-500/30 rounded-2xl p-8 shadow-2xl shadow-blue-500/10 backdrop-blur-sm">
-            <h2 className="text-3xl font-bold text-white mb-6 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-              Total Tasks
-            </h2>
-            <div className="flex gap-4 mb-6">
-              {['all', 'ongoing', 'completed', 'rejected'].map((filter) => (
+          <div className={`${cardBgClass} border ${borderClass} rounded-xl p-8 animate-fade-in`}>
+            <h2 className={`text-3xl font-bold ${textClass} mb-6`}>Total Tasks</h2>
+            <div className="flex gap-4 mb-6 flex-wrap">
+              {['all', 'completed', 'ongoing', 'rejected'].map((filter) => (
                 <button
                   key={filter}
-                  onClick={() => setTaskFilter(filter as any)}
+                  onClick={() => setTaskFilter(filter as typeof taskFilter)}
                   className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 ${
                     taskFilter === filter
-                      ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25'
-                      : 'bg-[#0a1128] text-gray-300 border border-blue-900/50 hover:border-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/10'
+                      ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/50'
+                      : `${inputBgClass} ${mutedTextClass} hover:${cardBgClass} border ${borderClass}`
                   }`}
                 >
                   {filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -273,39 +344,34 @@ export default function Dashboard({ onLogout, userRole }: DashboardProps) {
               ))}
             </div>
             <div className="space-y-4">
-              {mockTasks
-                .filter((task) => taskFilter === 'all' || task.status === taskFilter)
-                .map((task) => (
-                <div 
-                  key={task.id} 
-                  className="border border-blue-900/30 rounded-xl p-6 bg-[#0a1128]/50 backdrop-blur-sm hover:border-cyan-500/30 hover:shadow-2xl hover:shadow-cyan-500/10 transition-all duration-300 transform hover:scale-[1.01] group"
+              {filteredTasks.map((task, idx) => (
+                <div
+                  key={task.id}
+                  className={`border ${borderClass} rounded-lg p-6 hover:shadow-lg hover:shadow-blue-500/10 hover:border-blue-500/50 transition-all duration-300 transform hover:scale-[1.02] animate-fade-in`}
+                  style={{ animationDelay: `${idx * 0.1}s` }}
                 >
                   <div className="flex justify-between items-start mb-3">
-                    <h3 className="text-xl font-semibold text-white group-hover:text-cyan-200 transition-colors">
-                      {task.title}
-                    </h3>
+                    <h3 className={`text-xl font-semibold ${textClass}`}>{task.title}</h3>
                     <span
-                      className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-300 ${
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${
                         task.status === 'completed'
-                          ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 border border-green-500/30'
+                          ? 'bg-green-500/20 text-green-400'
                           : task.status === 'ongoing'
-                          ? 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-400 border border-blue-500/30'
-                          : 'bg-gradient-to-r from-red-500/20 to-pink-500/20 text-red-400 border border-red-500/30'
+                          ? 'bg-blue-500/20 text-blue-400'
+                          : 'bg-red-500/20 text-red-400'
                       }`}
                     >
                       {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
                     </span>
                   </div>
-                  <p className="text-gray-400 mb-3 group-hover:text-gray-300 transition-colors">
-                    {task.description}
-                  </p>
-                  <div className="flex items-center text-sm text-gray-400 group-hover:text-cyan-300 transition-colors">
+                  <p className={`${mutedTextClass} mb-3`}>{task.description}</p>
+                  <div className={`flex items-center text-sm ${mutedTextClass}`}>
                     <Clock size={16} className="mr-2" />
                     <span>Deadline: {new Date(task.deadline).toLocaleDateString()}</span>
                   </div>
                   {task.status === 'rejected' && task.rejectionReason && (
-                    <div className="mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                      <p className="text-sm text-white">
+                    <div className="mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg animate-fade-in">
+                      <p className="text-lg text-red-400">
                         <strong>Rejection Reason:</strong> {task.rejectionReason}
                       </p>
                     </div>
@@ -317,34 +383,33 @@ export default function Dashboard({ onLogout, userRole }: DashboardProps) {
         );
 
       case 'available-tasks':
+        const availableTasks = tasks.filter(task => task.status === 'available');
         return (
-          <div className="bg-gradient-to-br from-[#0f1941] to-[#1a2b5f] border border-blue-500/30 rounded-2xl p-8 shadow-2xl shadow-blue-500/10 backdrop-blur-sm">
-            <h2 className="text-3xl font-bold text-white mb-6 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-              Available Tasks
-            </h2>
+          <div className={`${cardBgClass} border ${borderClass} rounded-xl p-8 animate-fade-in`}>
+            <h2 className={`text-3xl font-bold ${textClass} mb-6`}>Available Tasks</h2>
             <div className="space-y-4">
-              {mockAvailableTasks.map((task) => (
-                <div 
-                  key={task.id} 
-                  className="border border-blue-900/30 rounded-xl p-6 bg-[#0a1128]/50 backdrop-blur-sm hover:border-cyan-500/30 hover:shadow-2xl hover:shadow-cyan-500/10 transition-all duration-300 transform hover:scale-[1.01] group"
+              {availableTasks.map((task, idx) => (
+                <div
+                  key={task.id}
+                  className={`border border-blue-400 rounded-xl p-6 hover:shadow-lg hover:shadow-blue-500/10 hover:border-blue-500/50 transition-all duration-300 transform hover:scale-[1.02] animate-fade-in`}
+                  style={{ animationDelay: `${idx * 0.1}s` }}
                 >
-                  <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-cyan-200 transition-colors">
-                    {task.title}
-                  </h3>
-                  <p className="text-gray-400 mb-3 group-hover:text-gray-300 transition-colors">
-                    {task.description}
-                  </p>
-                  <div className="flex items-center text-sm text-gray-400 mb-4 group-hover:text-cyan-300 transition-colors">
+                  <h3 className={`text-2xl font-semibold ${textClass} p-2 mb-3`}>{task.title}</h3>
+                  <p className={`${mutedTextClass} text-lg p-2 mb-3`}>{task.description}</p>
+                  <div className={`flex items-center text-sm ${mutedTextClass} mb-4`}>
                     <Clock size={16} className="mr-2" />
                     <span>Deadline: {new Date(task.deadline).toLocaleDateString()}</span>
                   </div>
                   <div className="flex gap-3">
-                    <button className="px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-lg shadow-blue-500/25">
+                    <button
+                      onClick={() => handleAcceptTask(task.id)}
+                      className="px-4 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/50"
+                    >
                       Accept Task
                     </button>
                     <button
-                      onClick={() => handleRejectTask(task.id)}
-                      className="px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-lg shadow-red-500/25"
+                      onClick={() => handleRejectTask(task)}
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-red-500/50"
                     >
                       Reject Task
                     </button>
@@ -356,90 +421,89 @@ export default function Dashboard({ onLogout, userRole }: DashboardProps) {
         );
 
       case 'current-tasks':
+        const currentTasks = tasks.filter(task => task.status === 'ongoing');
         return (
-          <div className="bg-gradient-to-br from-[#0f1941] to-[#1a2b5f] border border-blue-500/30 rounded-2xl p-8 shadow-2xl shadow-blue-500/10 backdrop-blur-sm">
-            <h2 className="text-3xl font-bold text-white mb-6 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-              Current Tasks
-            </h2>
+          <div className={`${cardBgClass} border ${borderClass} rounded-xl p-8 animate-fade-in`}>
+            <h2 className={`text-3xl font-bold ${textClass} mb-6`}>Current Tasks</h2>
             <div className="space-y-4">
-              {mockTasks
-                .filter((task) => task.status === 'ongoing')
-                .map((task) => (
-                  <div 
-                    key={task.id} 
-                    className="border border-blue-900/30 rounded-xl p-6 bg-[#0a1128]/50 backdrop-blur-sm hover:border-cyan-500/30 hover:shadow-2xl hover:shadow-cyan-500/10 transition-all duration-300 transform hover:scale-[1.01] group"
-                  >
-                    <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-cyan-200 transition-colors">
-                      {task.title}
-                    </h3>
-                    <p className="text-gray-400 mb-3 group-hover:text-gray-300 transition-colors">
-                      {task.description}
-                    </p>
-                    <div className="flex items-center text-sm text-gray-400 mb-4 group-hover:text-cyan-300 transition-colors">
-                      <Clock size={16} className="mr-2" />
-                      <span>Deadline: {new Date(task.deadline).toLocaleDateString()}</span>
-                    </div>
-                    <button className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-lg shadow-green-500/25">
-                      Mark as Complete
-                    </button>
+              {currentTasks.map((task, idx) => (
+                <div
+                  key={task.id}
+                  className={`border ${borderClass} rounded-lg p-6 hover:shadow-lg hover:shadow-blue-500/10 hover:border-blue-500/50 transition-all duration-300 transform hover:scale-[1.02] animate-fade-in`}
+                  style={{ animationDelay: `${idx * 0.1}s` }}
+                >
+                  <h3 className={`text-xl font-semibold ${textClass} mb-3`}>{task.title}</h3>
+                  <p className={`${mutedTextClass} mb-3`}>{task.description}</p>
+                  <div className={`flex items-center text-sm ${mutedTextClass} mb-4`}>
+                    <Clock size={16} className="mr-2" />
+                    <span>Deadline: {new Date(task.deadline).toLocaleDateString()}</span>
                   </div>
-                ))}
+                  <button
+                    onClick={() => handleCompleteTask(task.id)}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/50"
+                  >
+                    Mark as Complete
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
         );
 
       case 'settings':
         return (
-          <div className="bg-gradient-to-br from-[#0f1941] to-[#1a2b5f] border border-blue-500/30 rounded-2xl p-8 shadow-2xl shadow-blue-500/10 backdrop-blur-sm">
-            <h2 className="text-3xl font-bold text-white mb-6 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-              Settings
-            </h2>
+          <div className={`${cardBgClass} border ${borderClass} rounded-xl p-8 animate-fade-in`}>
+            <h2 className={`text-3xl font-bold ${textClass} mb-6`}>Settings</h2>
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-semibold text-white mb-3">Account Settings</h3>
+                <h3 className={`text-lg font-semibold ${textClass} mb-3`}>Account Settings</h3>
                 <div className="space-y-4">
-                  <div className="flex items-center p-4 bg-[#0a1128]/50 rounded-lg border border-blue-900/30 hover:border-cyan-500/30 transition-colors duration-300">
-                    <label className="flex items-center cursor-pointer">
-                      <div className="relative">
-                        <input type="checkbox" className="sr-only" defaultChecked />
-                        <div className="w-10 h-6 bg-gray-600 rounded-full"></div>
-                        <div className="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition transform translate-x-4 bg-cyan-400"></div>
-                      </div>
-                      <span className="ml-3 text-gray-300">Receive email notifications for new tasks</span>
+                  <div className="transform hover:scale-[1.02] transition-transform duration-200">
+                    <label className="flex items-center cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        className="mr-3 w-5 h-5 cursor-pointer accent-blue-500"
+                        defaultChecked
+                      />
+                      <span className={`${mutedTextClass} group-hover:${textClass} transition-colors`}>
+                        Receive email notifications for new tasks
+                      </span>
                     </label>
                   </div>
-                  <div className="flex items-center p-4 bg-[#0a1128]/50 rounded-lg border border-blue-900/30 hover:border-cyan-500/30 transition-colors duration-300">
-                    <label className="flex items-center cursor-pointer">
-                      <div className="relative">
-                        <input type="checkbox" className="sr-only" defaultChecked />
-                        <div className="w-10 h-6 bg-gray-600 rounded-full"></div>
-                        <div className="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition transform translate-x-4 bg-cyan-400"></div>
-                      </div>
-                      <span className="ml-3 text-gray-300">Receive reminders before task deadlines</span>
+                  <div className="transform hover:scale-[1.02] transition-transform duration-200">
+                    <label className="flex items-center cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        className="mr-3 w-5 h-5 cursor-pointer accent-blue-500"
+                        defaultChecked
+                      />
+                      <span className={`${mutedTextClass} group-hover:${textClass} transition-colors`}>
+                        Receive reminders before task deadlines
+                      </span>
                     </label>
                   </div>
                 </div>
               </div>
-              <div className="pt-6 border-t border-blue-900/20">
-                <h3 className="text-lg font-semibold text-white mb-3">Change Password</h3>
+              <div className={`pt-6 border-t ${borderClass}`}>
+                <h3 className={`text-lg font-semibold ${textClass} mb-3`}>Change Password</h3>
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">Current Password</label>
+                  <div className="transform hover:scale-[1.02] transition-transform duration-200">
+                    <label className={`block text-sm font-medium ${mutedTextClass} mb-2`}>Current Password</label>
                     <input
                       type="password"
-                      className="w-full px-4 py-3 bg-[#0a1128] border border-blue-900/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-300 hover:border-blue-400/50"
+                      className={`w-full px-4 py-3 ${inputBgClass} border ${borderClass} rounded-lg ${textClass} hover:border-blue-500/50 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200`}
                       placeholder="••••••••"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">New Password</label>
+                  <div className="transform hover:scale-[1.02] transition-transform duration-200">
+                    <label className={`block text-sm font-medium ${mutedTextClass} mb-2`}>New Password</label>
                     <input
                       type="password"
-                      className="w-full px-4 py-3 bg-[#0a1128] border border-blue-900/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-300 hover:border-blue-400/50"
+                      className={`w-full px-4 py-3 ${inputBgClass} border ${borderClass} rounded-lg ${textClass} hover:border-blue-500/50 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200`}
                       placeholder="••••••••"
                     />
                   </div>
-                  <button className="px-6 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-lg shadow-blue-500/25">
+                  <button className="px-6 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/50">
                     Update Password
                   </button>
                 </div>
@@ -454,29 +518,137 @@ export default function Dashboard({ onLogout, userRole }: DashboardProps) {
   };
 
   return (
-    <>
-      {showRejectModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-gradient-to-br from-[#0f1941] to-[#1a2b5f] border border-cyan-500/30 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl shadow-cyan-500/20">
-            <h3 className="text-xl font-semibold text-white mb-4">Please provide a reason for rejection:</h3>
-            <textarea
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              className="w-full px-4 py-3 bg-[#0a1128] border border-blue-900/50 rounded-lg text-white resize-none focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all duration-300 hover:border-blue-400/50"
-              rows={4}
-              placeholder="Enter your reason here..."
-              autoFocus
-            />
-            <div className="flex gap-3 mt-6">
+    <div className={`min-h-screen ${bgClass} flex`}>
+      <aside className={`w-64 ${cardBgClass} border-r ${borderClass} p-6 animate-slide-in flex flex-col`}>
+        <div className="mb-8">
+          <button
+            onClick={handleLogoClick}
+            className="flex items-center space-x-3 mb-2 hover:opacity-80 transition-opacity"
+          >
+            <img src={acmLogo} alt="ACM BVCOE Logo" className="h-10 w-auto -mr-1" />
+            <span className={`text-3xl font-bold ${textClass}`}>ACM</span>
+          </button>
+          <p className={`pt-4 text-xl font-semibold ${mutedTextClass}`}>Member Dashboard</p>
+        </div>
+
+        <nav className="space-y-2 flex-1">
+          {sidebarItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveSection(item.id)}
+                className={`w-full flex items-center px-4 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 ${
+                  activeSection === item.id
+                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/50'
+                    : `${mutedTextClass} hover:${cardBgClass} hover:${textClass}`
+                }`}
+              >
+                <Icon size={20} className="mr-3" />
+                <span className="font-medium">{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className={`pt-6 border-t ${borderClass} space-y-3`}>
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className={`w-full flex items-center px-4 py-3 ${mutedTextClass} hover:${textClass} rounded-lg transition-all duration-300 transform hover:scale-105`}
+          >
+            {isDarkMode ? <Sun size={20} className="mr-3" /> : <Moon size={20} className="mr-3" />}
+            <span className="font-medium">{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
+          </button>
+
+          <button
+            onClick={onLogout}
+            className="w-full flex items-center px-4 py-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-all duration-300 transform hover:scale-105"
+          >
+            <LogOut size={20} className="mr-3" />
+            <span className="font-medium">Logout</span>
+          </button>
+        </div>
+      </aside>
+
+      <main className="flex-1 p-8 overflow-y-auto">
+        <div className="max-w-7xl mx-auto">{renderContent()}</div>
+      </main>
+
+      {showRejectModal && taskToReject && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in backdrop-blur-sm">
+          <div className={`${cardBgClass} border ${borderClass} rounded-2xl p-8 w-full max-w-2xl shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 animate-scale-in m-4`}>
+            <div className="flex items-center mb-6">
+              <button
+                onClick={() => setShowRejectModal(false)}
+                className={`mr-4 p-2 hover:${inputBgClass} rounded-lg transition-all duration-200 group`}
+              >
+                <ArrowLeft size={24} className={mutedTextClass} />
+              </button>
+              <div className="flex items-center">
+                <div className="bg-red-500/20 p-3 rounded-xl mr-4">
+                  <XCircle size={32} className="text-red-400" />
+                </div>
+                <div>
+                  <h2 className={`text-3xl font-bold ${textClass}`}>Reject Task</h2>
+                  <p className={mutedTextClass}>Please provide a reason for rejection</p>
+                </div>
+              </div>
+            </div>
+
+            <div className={`mb-6 p-4 ${inputBgClass} border ${borderClass} rounded-lg animate-fade-in`}>
+              <h3 className={`text-lg font-semibold ${textClass} mb-2`}>{taskToReject.title}</h3>
+              <p className={`${mutedTextClass} text-sm`}>{taskToReject.description}</p>
+            </div>
+
+            <div className="mb-6">
+              <label className={`block text-lg font-medium ${textClass} mb-3`}>
+                Reason for Rejection <span className="text-red-400">*</span>
+              </label>
+              <textarea
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                className={`w-full px-4 py-3 ${inputBgClass} border ${borderClass} rounded-lg ${textClass} resize-none focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 hover:border-blue-500/50`}
+                rows={6}
+                placeholder="Enter your reason for rejecting this task..."
+                autoFocus
+              />
+              <p className={`mt-2 text-sm ${mutedTextClass}`}>
+                {rejectionReason.length} / 500 characters
+              </p>
+            </div>
+
+            <div className={`${inputBgClass} border ${borderClass} rounded-lg p-4 mb-6 animate-fade-in`}>
+              <h4 className={`text-sm font-semibold ${textClass} mb-2`}>Common Rejection Reasons:</h4>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  'Insufficient time',
+                  'Lack of resources',
+                  'Outside expertise',
+                  'Conflicting priorities',
+                  'Unclear requirements',
+                ].map((reason) => (
+                  <button
+                    key={reason}
+                    onClick={() => setRejectionReason(reason)}
+                    className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-sm hover:bg-blue-500/20 transition-all duration-200 transform hover:scale-105 border border-blue-500/30"
+                  >
+                    {reason}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-4">
               <button
                 onClick={confirmRejectTask}
-                className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-lg shadow-blue-500/25"
+                disabled={!rejectionReason.trim()}
+                className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-red-500/50"
               >
-                OK
+                Confirm Rejection
               </button>
               <button
-                onClick={cancelRejectTask}
-                className="flex-1 px-4 py-2 bg-gradient-to-r from-gray-600 to-slate-600 hover:from-gray-700 hover:to-slate-700 text-white rounded-lg font-medium transition-all duration-300 transform hover:scale-105"
+                onClick={() => setShowRejectModal(false)}
+                className={`flex-1 px-6 py-3 ${inputBgClass} ${textClass} rounded-lg font-semibold hover:${cardBgClass} transition-all duration-300 transform hover:scale-105 border ${borderClass} hover:border-blue-500/50`}
               >
                 Cancel
               </button>
@@ -485,53 +657,14 @@ export default function Dashboard({ onLogout, userRole }: DashboardProps) {
         </div>
       )}
 
-      <div className="min-h-screen bg-gradient-to-br from-[#0a1128] via-[#0f1941] to-[#1a2b5f] flex">
-        <aside className="w-64 bg-[#0f1941]/80 backdrop-blur-sm border-r border-blue-900/30 p-6 shadow-2xl shadow-blue-500/10">
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-white bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-              ACM BVCOE
-            </h1>
-            <p className="text-sm text-gray-400 mt-1">Member Dashboard</p>
+      {showConfirmation && (
+        <div className="fixed top-4 right-4 z-50 animate-slide-in-right">
+          <div className="bg-green-500 text-white px-6 py-4 rounded-lg shadow-2xl flex items-center space-x-3">
+            <CheckSquare size={24} />
+            <span className="font-medium">{confirmationMessage}</span>
           </div>
-
-          <nav className="space-y-2">
-            {sidebarItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveSection(item.id)}
-                  className={`w-full flex items-center px-4 py-3 rounded-xl transition-all duration-300 group ${
-                    activeSection === item.id
-                      ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 transform scale-105'
-                      : 'text-gray-300 hover:bg-blue-500/20 hover:text-cyan-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-blue-500/10'
-                  }`}
-                >
-                  <Icon 
-                    size={20} 
-                    className={`mr-3 transition-all duration-300 ${
-                      activeSection === item.id ? 'scale-110' : 'group-hover:scale-110'
-                    }`} 
-                  />
-                  <span className="font-medium">{item.label}</span>
-                </button>
-              );
-            })}
-          </nav>
-
-          <button
-            onClick={onLogout}
-            className="w-full flex items-center px-4 py-3 mt-8 text-red-400 hover:bg-gradient-to-r hover:from-red-500/20 hover:to-pink-500/20 hover:text-red-300 rounded-xl transition-all duration-300 transform hover:scale-[1.02] group"
-          >
-            <LogOut size={20} className="mr-3 group-hover:scale-110 transition-transform duration-300" />
-            <span className="font-medium">Logout</span>
-          </button>
-        </aside>
-
-        <main className="flex-1 p-8">
-          <div className="max-w-7xl mx-auto">{renderContent()}</div>
-        </main>
-      </div>
-    </>
+        </div>
+      )}
+    </div>
   );
 }
