@@ -1,5 +1,18 @@
 import { useState } from 'react';
-import { User, Plus, ListTodo, Settings, LogOut, Calendar, X, RefreshCw, Camera, Users, Check, X as XIcon, Phone } from 'lucide-react';
+import { 
+  FaUser, 
+  FaPlus, 
+  FaListAlt, 
+  FaCog, 
+  FaSignOutAlt, 
+  FaCalendarAlt,
+  FaTimes,
+  FaSync,
+  FaCamera,
+  FaUsers,
+  FaCheck,
+  FaPhone
+} from 'react-icons/fa';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -190,11 +203,11 @@ export default function AdminDashboard({ onLogout, userRole }: AdminDashboardPro
   ];
 
   const sidebarItems = [
-    { id: 'create-task' as AdminSection, label: 'Create Task', icon: Plus },
-    { id: 'manage-tasks' as AdminSection, label: 'Manage Tasks', icon: ListTodo },
-    { id: 'member-requests' as AdminSection, label: 'Member Requests', icon: Users },
-    { id: 'profile' as AdminSection, label: 'My Profile', icon: User },
-    { id: 'settings' as AdminSection, label: 'Settings', icon: Settings },
+    { id: 'create-task' as AdminSection, label: 'Create Task', icon: FaPlus },
+    { id: 'manage-tasks' as AdminSection, label: 'Manage Tasks', icon: FaListAlt },
+    { id: 'member-requests' as AdminSection, label: 'Member Requests', icon: FaUsers },
+    { id: 'profile' as AdminSection, label: 'My Profile', icon: FaUser },
+    { id: 'settings' as AdminSection, label: 'Settings', icon: FaCog },
   ];
 
   const getRoleBadgeColor = (role: string) => {
@@ -307,7 +320,7 @@ export default function AdminDashboard({ onLogout, userRole }: AdminDashboardPro
                 onClick={() => setShowCreateModal(true)}
                 className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg font-medium hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40"
               >
-                <Plus size={20} className="mr-2" />
+                <FaPlus size={16} className="mr-2" />
                 Create Task
               </button>
             </div>
@@ -359,11 +372,11 @@ export default function AdminDashboard({ onLogout, userRole }: AdminDashboardPro
 
                   <div className="flex items-center justify-between text-sm text-gray-400">
                     <div className="flex items-center group-hover:text-cyan-300 transition-colors">
-                      <User size={16} className="mr-2" />
+                      <FaUser size={14} className="mr-2" />
                       <span>Assigned to: {task.assignedTo}</span>
                     </div>
                     <div className="flex items-center group-hover:text-cyan-300 transition-colors">
-                      <Calendar size={16} className="mr-2" />
+                      <FaCalendarAlt size={14} className="mr-2" />
                       <span>Deadline: {new Date(task.deadline).toLocaleDateString()}</span>
                     </div>
                   </div>
@@ -400,7 +413,7 @@ export default function AdminDashboard({ onLogout, userRole }: AdminDashboardPro
                             onClick={() => setReassignTaskId(task.id)}
                             className="flex items-center px-3 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg text-sm font-medium hover:from-amber-600 hover:to-orange-600 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-amber-500/25"
                           >
-                            <RefreshCw size={14} className="mr-1" />
+                            <FaSync size={12} className="mr-1" />
                             Reassign Task
                           </button>
                         )}
@@ -422,7 +435,7 @@ export default function AdminDashboard({ onLogout, userRole }: AdminDashboardPro
                       onClick={() => setShowCreateModal(false)}
                       className="text-gray-400 hover:text-cyan-300 hover:scale-110 transition-all duration-300"
                     >
-                      <X size={24} />
+                      <FaTimes size={20} />
                     </button>
                   </div>
 
@@ -551,17 +564,17 @@ export default function AdminDashboard({ onLogout, userRole }: AdminDashboardPro
                   <div className="grid md:grid-cols-2 gap-4 mb-4">
                     <div className="space-y-3">
                       <div className="flex items-center text-sm text-gray-400 group-hover:text-cyan-300 transition-colors">
-                        <Phone size={16} className="mr-3 text-cyan-400" />
+                        <FaPhone size={14} className="mr-3 text-cyan-400" />
                         <span>{request.phoneNumber}</span>
                       </div>
                       <div className="flex items-center text-sm text-gray-400 group-hover:text-cyan-300 transition-colors">
-                        <User size={16} className="mr-3 text-blue-400" />
+                        <FaUser size={14} className="mr-3 text-blue-400" />
                         <span>Applied as: {getRoleDisplayName(request.role)}</span>
                       </div>
                     </div>
                     <div className="space-y-3">
                       <div className="flex items-center text-sm text-gray-400 group-hover:text-cyan-300 transition-colors">
-                        <Calendar size={16} className="mr-3 text-purple-400" />
+                        <FaCalendarAlt size={14} className="mr-3 text-purple-400" />
                         <span>Applied: {new Date(request.submittedAt).toLocaleDateString()}</span>
                       </div>
                       <div className="flex items-center text-sm text-gray-400 group-hover:text-cyan-300 transition-colors">
@@ -577,14 +590,14 @@ export default function AdminDashboard({ onLogout, userRole }: AdminDashboardPro
                         onClick={() => handleMemberRequest(request.id, 'approve')}
                         className="flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg font-medium hover:from-green-600 hover:to-emerald-600 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-green-500/25"
                       >
-                        <Check size={16} className="mr-2" />
+                        <FaCheck size={14} className="mr-2" />
                         Approve Request
                       </button>
                       <button
                         onClick={() => handleMemberRequest(request.id, 'reject')}
                         className="flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg font-medium hover:from-red-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-red-500/25"
                       >
-                        <XIcon size={16} className="mr-2" />
+                        <FaTimes size={14} className="mr-2" />
                         Reject Request
                       </button>
                     </div>
@@ -595,7 +608,7 @@ export default function AdminDashboard({ onLogout, userRole }: AdminDashboardPro
 
             {memberRequests.length === 0 && (
               <div className="text-center py-12">
-                <Users size={64} className="mx-auto text-gray-500 mb-4" />
+                <FaUsers size={48} className="mx-auto text-gray-500 mb-4" />
                 <h3 className="text-xl font-semibold text-gray-400 mb-2">No Member Requests</h3>
                 <p className="text-gray-500">All member requests have been processed.</p>
               </div>
@@ -625,7 +638,7 @@ export default function AdminDashboard({ onLogout, userRole }: AdminDashboardPro
                   )}
                 </div>
                 <label className="absolute bottom-0 right-4 bg-cyan-500 hover:bg-cyan-600 text-white p-1 rounded-full cursor-pointer transition-all duration-300 transform hover:scale-110 shadow-lg">
-                  <Camera size={14} />
+                  <FaCamera size={12} />
                   <input
                     type="file"
                     accept="image/*"
@@ -808,7 +821,7 @@ export default function AdminDashboard({ onLogout, userRole }: AdminDashboardPro
                 }`}
               >
                 <Icon 
-                  size={20} 
+                  size={18} 
                   className={`mr-3 transition-all duration-300 ${
                     activeSection === item.id ? 'scale-110' : 'group-hover:scale-110'
                   }`} 
@@ -823,7 +836,7 @@ export default function AdminDashboard({ onLogout, userRole }: AdminDashboardPro
           onClick={onLogout}
           className="w-full flex items-center px-4 py-3 mt-8 text-red-400 hover:bg-gradient-to-r hover:from-red-500/20 hover:to-pink-500/20 hover:text-red-300 rounded-xl transition-all duration-300 transform hover:scale-[1.02] group"
         >
-          <LogOut size={20} className="mr-3 group-hover:scale-110 transition-transform duration-300" />
+          <FaSignOutAlt size={18} className="mr-3 group-hover:scale-110 transition-transform duration-300" />
           <span className="font-medium">Logout</span>
         </button>
       </aside>

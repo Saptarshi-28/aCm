@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { User, CheckSquare, ListTodo, Clock, Settings, LogOut, XCircle, ArrowLeft, Moon, Sun, Camera } from 'lucide-react';
+import { FaUser, FaCheckSquare, FaListAlt, FaClock, FaCog, FaSignOutAlt, FaTimesCircle, FaArrowLeft, FaMoon, FaSun, FaCamera } from 'react-icons/fa';
 import AdminDashboard from './AdminDashboard';
 const acmLogo = "https://bvcoe.acm.org/static/media/ACM-BVP-logo.6425d80f.png";
 
@@ -91,11 +91,11 @@ export default function Dashboard({ onLogout, userRole, userEmail }: DashboardPr
   ]);
 
   const sidebarItems = [
-    { id: 'profile' as DashboardSection, label: 'My Profile', icon: User },
-    { id: 'total-tasks' as DashboardSection, label: 'Total Tasks', icon: CheckSquare },
-    { id: 'available-tasks' as DashboardSection, label: 'Available Tasks', icon: ListTodo },
-    { id: 'current-tasks' as DashboardSection, label: 'Current Tasks', icon: Clock },
-    { id: 'settings' as DashboardSection, label: 'Settings', icon: Settings },
+    { id: 'profile' as DashboardSection, label: 'My Profile', icon: FaUser },
+    { id: 'total-tasks' as DashboardSection, label: 'Total Tasks', icon: FaCheckSquare },
+    { id: 'available-tasks' as DashboardSection, label: 'Available Tasks', icon: FaListAlt },
+    { id: 'current-tasks' as DashboardSection, label: 'Current Tasks', icon: FaClock },
+    { id: 'settings' as DashboardSection, label: 'Settings', icon: FaCog },
   ];
 
   const departments = [
@@ -205,7 +205,7 @@ export default function Dashboard({ onLogout, userRole, userEmail }: DashboardPr
                     onClick={() => fileInputRef.current?.click()}
                     className="absolute bottom-0 right-0 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600 transition-all shadow-lg"
                   >
-                    <Camera size={16} />
+                    <FaCamera size={16} />
                   </button>
                 )}
                 <input
@@ -366,7 +366,7 @@ export default function Dashboard({ onLogout, userRole, userEmail }: DashboardPr
                   </div>
                   <p className={`${mutedTextClass} mb-3`}>{task.description}</p>
                   <div className={`flex items-center text-sm ${mutedTextClass}`}>
-                    <Clock size={16} className="mr-2" />
+                    <FaClock size={16} className="mr-2" />
                     <span>Deadline: {new Date(task.deadline).toLocaleDateString()}</span>
                   </div>
                   {task.status === 'rejected' && task.rejectionReason && (
@@ -397,7 +397,7 @@ export default function Dashboard({ onLogout, userRole, userEmail }: DashboardPr
                   <h3 className={`text-2xl font-semibold ${textClass} p-2 mb-3`}>{task.title}</h3>
                   <p className={`${mutedTextClass} text-lg p-2 mb-3`}>{task.description}</p>
                   <div className={`flex items-center text-sm ${mutedTextClass} mb-4`}>
-                    <Clock size={16} className="mr-2" />
+                    <FaClock size={16} className="mr-2" />
                     <span>Deadline: {new Date(task.deadline).toLocaleDateString()}</span>
                   </div>
                   <div className="flex gap-3">
@@ -435,7 +435,7 @@ export default function Dashboard({ onLogout, userRole, userEmail }: DashboardPr
                   <h3 className={`text-xl font-semibold ${textClass} mb-3`}>{task.title}</h3>
                   <p className={`${mutedTextClass} mb-3`}>{task.description}</p>
                   <div className={`flex items-center text-sm ${mutedTextClass} mb-4`}>
-                    <Clock size={16} className="mr-2" />
+                    <FaClock size={16} className="mr-2" />
                     <span>Deadline: {new Date(task.deadline).toLocaleDateString()}</span>
                   </div>
                   <button
@@ -556,7 +556,7 @@ export default function Dashboard({ onLogout, userRole, userEmail }: DashboardPr
             onClick={() => setIsDarkMode(!isDarkMode)}
             className={`w-full flex items-center px-4 py-3 ${mutedTextClass} hover:${textClass} rounded-lg transition-all duration-300 transform hover:scale-105`}
           >
-            {isDarkMode ? <Sun size={20} className="mr-3" /> : <Moon size={20} className="mr-3" />}
+            {isDarkMode ? <FaSun size={20} className="mr-3" /> : <FaMoon size={20} className="mr-3" />}
             <span className="font-medium">{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
           </button>
 
@@ -564,7 +564,7 @@ export default function Dashboard({ onLogout, userRole, userEmail }: DashboardPr
             onClick={onLogout}
             className="w-full flex items-center px-4 py-3 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-all duration-300 transform hover:scale-105"
           >
-            <LogOut size={20} className="mr-3" />
+            <FaSignOutAlt size={20} className="mr-3" />
             <span className="font-medium">Logout</span>
           </button>
         </div>
@@ -582,11 +582,11 @@ export default function Dashboard({ onLogout, userRole, userEmail }: DashboardPr
                 onClick={() => setShowRejectModal(false)}
                 className={`mr-4 p-2 hover:${inputBgClass} rounded-lg transition-all duration-200 group`}
               >
-                <ArrowLeft size={24} className={mutedTextClass} />
+                <FaArrowLeft size={24} className={mutedTextClass} />
               </button>
               <div className="flex items-center">
                 <div className="bg-red-500/20 p-3 rounded-xl mr-4">
-                  <XCircle size={32} className="text-red-400" />
+                  <FaTimesCircle size={32} className="text-red-400" />
                 </div>
                 <div>
                   <h2 className={`text-3xl font-bold ${textClass}`}>Reject Task</h2>
@@ -660,7 +660,7 @@ export default function Dashboard({ onLogout, userRole, userEmail }: DashboardPr
       {showConfirmation && (
         <div className="fixed top-4 right-4 z-50 animate-slide-in-right">
           <div className="bg-green-500 text-white px-6 py-4 rounded-lg shadow-2xl flex items-center space-x-3">
-            <CheckSquare size={24} />
+            <FaCheckSquare size={24} />
             <span className="font-medium">{confirmationMessage}</span>
           </div>
         </div>

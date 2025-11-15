@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Menu, X, Users, CheckSquare, BarChart3, Code, Lightbulb, Trophy, Eye, EyeOff } from 'lucide-react';
+import { FaUsers, FaCheckSquare, FaChartBar, FaCode, FaLightbulb, FaTrophy, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { HiMenu, HiX } from 'react-icons/hi';
 import Dashboard from './components/Dashboard';
 import WelcomeAnimation from './components/WelcomeAnimation';
 import AdminDashboard from './components/AdminDashboard';
@@ -163,7 +164,7 @@ function App() {
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 transition-colors"
                     style={{ color: COLORS.muted }}
                   >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
                   </button>
                 </div>
               </div>
@@ -357,7 +358,7 @@ function App() {
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 transition-colors"
                     style={{ color: COLORS.muted }}
                   >
-                    {showSignupPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    {showSignupPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
                   </button>
                 </div>
               </div>
@@ -433,7 +434,7 @@ function App() {
               className="md:hidden p-2 rounded-lg transition-colors hover:bg-blue-900/20"
               style={{ color: COLORS.white }}
             >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {isMenuOpen ? <HiX size={24} /> : <HiMenu size={24} />}
             </button>
           </div>
 
@@ -527,17 +528,17 @@ function App() {
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                icon: <Code className="text-white" size={28} />,
+                icon: <FaCode className="text-white" size={28} />,
                 title: "Technical Workshops",
                 description: "Regular hands-on workshops covering cutting-edge technologies, programming languages, and industry best practices to enhance your technical skills."
               },
               {
-                icon: <Lightbulb className="text-white" size={28} />,
+                icon: <FaLightbulb className="text-white" size={28} />,
                 title: "Innovation Projects",
                 description: "Collaborate on real-world projects, hackathons, and competitions that challenge your creativity and problem-solving abilities."
               },
               {
-                icon: <Trophy className="text-white" size={28} />,
+                icon: <FaTrophy className="text-white" size={28} />,
                 title: "Competitive Programming",
                 description: "Join our competitive programming sessions, participate in coding contests, and sharpen your algorithmic thinking with fellow enthusiasts."
               }
@@ -569,17 +570,17 @@ function App() {
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                icon: <Users className="text-white" size={28} />,
+                icon: <FaUsers className="text-white" size={28} />,
                 title: "Hierarchical Management",
                 description: "Core members assign to department heads, with built-in oversight and workflow control."
               },
               {
-                icon: <CheckSquare className="text-white" size={28} />,
+                icon: <FaCheckSquare className="text-white" size={28} />,
                 title: "Smart Task Tracking",
                 description: "Accept, reject, or complete tasks with built-in deadline monitoring and status updates."
               },
               {
-                icon: <BarChart3 className="text-white" size={28} />,
+                icon: <FaChartBar className="text-white" size={28} />,
                 title: "Performance Insights",
                 description: "Real-time analytics and progress tracking for better team performance."
               }
